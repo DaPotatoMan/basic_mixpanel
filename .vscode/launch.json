@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Preview",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart"
+    },
+    {
+      "name": "Preview - Web",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "args": [
+        "-d",
+        "web-server",
+        "--web-port",
+        "52545",
+        "--web-browser-flag=--disable-web-security"
+      ],
+    },
+  ]
+}

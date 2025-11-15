@@ -1,0 +1,20 @@
+name: basic_mixpanel
+description: Core cross-platform mixpanel package
+version: 0.0.1
+homepage: https://github.com/DaPotatoMan/basic_mixpanel
+
+environment:
+  sdk: ">=3.0.0"
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ">=1.6.0 <=2.0.0"
+  mixpanel_flutter: ">=2.0.0 <=3.0.0"
+  shared_preferences: ">=2.0.0 <=3.0.0"
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
