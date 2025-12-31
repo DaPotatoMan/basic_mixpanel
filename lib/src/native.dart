@@ -8,6 +8,9 @@ class MixpanelNative extends MixpanelBase<Mixpanel> {
   identify(id) => use((sdk) => sdk.identify(id));
 
   @override
+  setPeopleProp(prop, to) => use((sdk) => sdk.getPeople().set(prop, to));
+
+  @override
   registerSuperProperties(Map<String, dynamic> properties) => use((sdk) => sdk.registerSuperProperties(properties));
 
   @override

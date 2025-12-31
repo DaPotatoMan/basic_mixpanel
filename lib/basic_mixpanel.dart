@@ -32,4 +32,7 @@ class Mixpanel extends MixpanelBase<MixpanelBase<dynamic>> {
 
   @override
   track(event, {properties = const {}}) => use((sdk) => sdk.track(event, properties: properties));
+
+  @override
+  setPeopleProp(prop, to) => use((sdk) => sdk.setPeopleProp(prop, to));
 }

@@ -25,5 +25,10 @@ class MixpanelDesktop extends MixpanelBase<MixpanelAnalytics> {
   clearSuperProperties() => use((sdk) => sdk.engage(operation: MixpanelUpdateOperations.$unset, value: {}));
 
   @override
+  setPeopleProp(prop, to) => use(
+        (sdk) => sdk.engage(operation: MixpanelUpdateOperations.$set, value: {prop: to.toString()}),
+      );
+
+  @override
   track(event, {properties = const {}}) => use((sdk) => sdk.track(event: event, properties: properties));
 }
