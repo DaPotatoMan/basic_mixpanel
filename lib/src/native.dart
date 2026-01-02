@@ -2,7 +2,16 @@ import 'package:basic_mixpanel/src/base.dart';
 import 'package:mixpanel_flutter/mixpanel_flutter.dart';
 
 class MixpanelNative extends MixpanelBase<Mixpanel> {
-  MixpanelNative.init(super.token) : super.init(sdk: Mixpanel.init(token, trackAutomaticEvents: true));
+  MixpanelNative.init(super.token)
+      : super.init(
+          sdk: Mixpanel.init(token, trackAutomaticEvents: true).then((sdk) {
+            sdk
+              ..setServerURL('https://api-eu.mixpanel.com')
+              ..optInTracking();
+
+            return sdk;
+          }),
+        );
 
   @override
   identify(id) => use((sdk) => sdk.identify(id));
