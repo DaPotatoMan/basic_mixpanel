@@ -26,16 +26,27 @@ class MixpanelAnalytics {
   /// The instance of the class created with this constructor will send the events on the fly, which could result on high traffic in case there are many events.
   /// Also, if a request returns an error, this will be logged but the event will be lost.
   /// If you want events to be send in batch and also reliability to the requests use [MixpanelAnalytics.batch] instead.
+  ///
   /// [token] is the Mixpanel token associated with your project.
+  ///
   /// [userId$] is a stream which contains the value of the userId that will be used to identify the events for a user.
+  ///
   /// [shouldAnonymize] will anonymize the sensitive information (userId) sent to mixpanel.
+  ///
   /// [shaFn] function used to anonymize the data.
+  ///
   /// [verbose] true will provide a detailed error cause in case the request is not successful.
+  ///
   /// [useIp] is the `ip` property as explained in [mixpanel documentation](https://developer.mixpanel.com/docs/http)
+  ///
   /// [onError] is a callback function that will be executed in case there is an error, otherwise `debugPrint` will be used.
+  ///
   /// [proxyUrl] URL to use in the requests as a proxy. This URL will be used as follows $proxyUrl/mixpanel.api...
+  ///
   /// [optionalHeaders] http headers to add in each request.
+  ///
   /// [prefsKey] key to use in the SharedPreferences. If you leave it empty a default name will be used.
+  ///
   /// [baseApiUrl] Ingestion API URL. If you don't inform it, the US-based url will be used (api.mixpanel.com). https://developer.mixpanel.com/docs/privacy-security#storing-your-data-in-the-european-union
   MixpanelAnalytics({
     required String token,

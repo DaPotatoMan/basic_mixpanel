@@ -2,6 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+class MixpanelConfig {
+  const MixpanelConfig({
+    this.serverUrl = 'https://api-eu.mixpanel.com',
+    this.logging = false,
+  });
+
+  final bool logging;
+  final String serverUrl;
+}
+
 abstract class MixpanelBase<SDK> {
   const MixpanelBase.init(this.token, {required this.sdk});
 

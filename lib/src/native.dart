@@ -2,13 +2,12 @@ import 'package:basic_mixpanel/src/base.dart';
 import 'package:mixpanel_flutter/mixpanel_flutter.dart';
 
 class MixpanelNative extends MixpanelBase<Mixpanel> {
-  MixpanelNative.init(
-    super.token, {
-    required String serverUrl,
-  }) : super.init(
-          sdk: Mixpanel.init(token, trackAutomaticEvents: true).then((sdk) {
+  MixpanelNative.init(super.token, MixpanelConfig config)
+      : super.init(
+          sdk: Mixpanel.init(token, trackAutomaticEvents: true, config: {'ignore_dnt': true}).then((sdk) {
             sdk
-              ..setServerURL(serverUrl)
+              ..setLoggingEnabled(config.logging)
+              ..setServerURL(config.serverUrl)
               ..optInTracking();
 
             return sdk;
