@@ -6,15 +6,18 @@ import 'package:basic_mixpanel/src/native.dart' deferred as native;
 import 'package:flutter/foundation.dart';
 
 class Mixpanel extends MixpanelBase<MixpanelBase<dynamic>> {
-  Mixpanel.init(super.token) : super.init(sdk: _loadLib(token));
+  Mixpanel.init(
+    super.token, {
+    String serverUrl = 'https://api-eu.mixpanel.com',
+  }) : super.init(sdk: _loadLib(token, serverUrl));
 
-  static Future<MixpanelBase<dynamic>> _loadLib(String token) async {
+  static Future<MixpanelBase<dynamic>> _loadLib(String token, String serverUrl) async {
     if (kIsWeb || Platform.isAndroid || Platform.isIOS) {
       await native.loadLibrary();
-      return native.MixpanelNative.init(token);
+      return native.MixpanelNative.init(token, serverUrl: serverUrl);
     } else {
       await desktop.loadLibrary();
-      return desktop.MixpanelDesktop.init(token);
+      return desktop.MixpanelDesktop.init(token, serverUrl: serverUrl);
     }
   }
 

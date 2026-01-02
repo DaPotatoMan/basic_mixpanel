@@ -2,13 +2,15 @@ import 'package:basic_mixpanel/src/base.dart';
 import 'package:basic_mixpanel/src/desktop_shared.dart';
 
 class MixpanelDesktop extends MixpanelBase<MixpanelAnalytics> {
-  MixpanelDesktop.init(super.token)
-      : super.init(
+  MixpanelDesktop.init(
+    super.token, {
+    required String serverUrl,
+  }) : super.init(
           sdk: MixpanelAnalytics(
             token: token,
             verbose: true,
             useIp: true,
-            baseApiUrl: 'https://api-eu.mixpanel.com',
+            baseApiUrl: serverUrl,
           ),
         );
 
