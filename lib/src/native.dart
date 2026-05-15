@@ -3,16 +3,16 @@ import 'package:mixpanel_flutter/mixpanel_flutter.dart';
 
 class MixpanelNative extends MixpanelBase<Mixpanel> {
   MixpanelNative.init(super.token, MixpanelConfig config)
-      : super.init(
-          sdk: Mixpanel.init(token, trackAutomaticEvents: true, config: {'ignore_dnt': true}).then((sdk) {
-            sdk
-              ..setLoggingEnabled(config.logging)
-              ..setServerURL(config.serverUrl)
-              ..optInTracking();
+    : super.init(
+        sdk: Mixpanel.init(token, trackAutomaticEvents: true, config: {'ignore_dnt': true}).then((sdk) {
+          sdk
+            ..setLoggingEnabled(config.logging)
+            ..setServerURL(config.serverUrl)
+            ..optInTracking();
 
-            return sdk;
-          }),
-        );
+          return sdk;
+        }),
+      );
 
   @override
   identify(id) => use((sdk) => sdk.identify(id));
@@ -30,6 +30,15 @@ class MixpanelNative extends MixpanelBase<Mixpanel> {
   setPeopleProp(prop, to) => use((sdk) => sdk.getPeople().set(prop, to));
 
   @override
+  setPeopleProps(props) => use((sdk) async {
+    final people = sdk.getPeople();
+
+    for (final entry in props.entries) {
+      people.set(entry.key, entry.value);
+    }
+  });
+
+  @override
   registerSuperProperties(props) => use((sdk) => sdk.registerSuperProperties(props));
 
   @override
@@ -45,6 +54,5 @@ class MixpanelNative extends MixpanelBase<Mixpanel> {
   track(
     event, {
     properties = const {},
-  }) =>
-      use((sdk) => sdk.track(event, properties: properties));
+  }) => use((sdk) => sdk.track(event, properties: properties));
 }

@@ -56,6 +56,9 @@ abstract class MixpanelBase<SDK> {
   /// Sets a single people/profile property.
   Future<void> setPeopleProp(String prop, dynamic to);
 
+  /// Sets multiple people/profile properties.
+  Future<void> setPeopleProps(Map<String, dynamic> props);
+
   /// Tracks an event with optional properties.
   Future<void> track(
     String event, {

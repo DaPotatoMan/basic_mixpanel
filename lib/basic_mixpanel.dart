@@ -51,4 +51,7 @@ class Mixpanel extends MixpanelBase<MixpanelBase<dynamic>> {
 
   @override
   setPeopleProp(prop, to) => use((sdk) => sdk.setPeopleProp(prop, to));
+
+  @override
+  setPeopleProps(props) => use((sdk) => sdk.setPeopleProps(props));
 }

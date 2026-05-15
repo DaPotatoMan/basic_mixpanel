@@ -45,5 +45,13 @@ class MixpanelDesktop extends MixpanelBase<MixpanelAnalytics> {
   );
 
   @override
+  setPeopleProps(props) => use(
+    (sdk) => sdk.engage(
+      operation: .$set,
+      value: {for (final entry in props.entries) entry.key: entry.value},
+    ),
+  );
+
+  @override
   track(event, {properties = const {}}) => use((sdk) => sdk.track(event: event, properties: properties));
 }
