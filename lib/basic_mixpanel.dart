@@ -11,7 +11,7 @@ class Mixpanel extends MixpanelBase<MixpanelBase<dynamic>> {
   Mixpanel.init(super.token, [MixpanelConfig config = const MixpanelConfig()]) : super.init(sdk: _loadLib(token, config));
 
   static Future<MixpanelBase<dynamic>> _loadLib(String token, MixpanelConfig config) async {
-    if (kIsWeb || Platform.isAndroid || Platform.isIOS) {
+    if (kIsWeb || Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
       await native.loadLibrary();
       return native.MixpanelNative.init(token, config);
     } else {
