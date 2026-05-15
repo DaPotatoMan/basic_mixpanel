@@ -16,6 +16,15 @@ class MixpanelDesktop extends MixpanelBase<MixpanelAnalytics> {
   identify(id) => registerSuperProperties({'distinct_id': id});
 
   @override
+  alias(alias, distinctId) => track(
+        r'$create_alias',
+        properties: {
+          'alias': alias,
+          'distinct_id': distinctId,
+        },
+      );
+
+  @override
   reset() => use((sdk) => sdk.reset());
 
   @override

@@ -24,6 +24,7 @@ abstract class MixpanelBase<SDK> {
   Future<T> use<T>(T Function(SDK sdk) fn) async => fn(await sdk);
 
   Future<void> identify(String id);
+  Future<void> alias(String alias, String distinctId);
   Future<void> reset();
   Future<void> flush();
 

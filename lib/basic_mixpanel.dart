@@ -24,6 +24,9 @@ class Mixpanel extends MixpanelBase<MixpanelBase<dynamic>> {
   identify(id) => use((sdk) => sdk.identify(id));
 
   @override
+  alias(alias, distinctId) => use((sdk) => sdk.alias(alias, distinctId));
+
+  @override
   reset() => use((sdk) => sdk.reset());
 
   @override

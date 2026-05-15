@@ -34,6 +34,12 @@ void main() {
       expect(mixpanel, isA<Mixpanel>());
     });
 
+    test('alias is exposed and completes', () async {
+      final mixpanel = Mixpanel.init('token-123');
+
+      await mixpanel.alias('user-456', 'anon-123');
+    });
+
     test('reset clears persisted mixpanel cache key', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
