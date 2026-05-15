@@ -25,6 +25,7 @@ abstract class MixpanelBase<SDK> {
 
   Future<void> identify(String id);
   Future<void> reset();
+  Future<void> flush();
 
   Future<void> registerSuperProperties(Map<String, dynamic> props);
   Future<void> registerSuperPropertiesOnce(Map<String, dynamic> props);

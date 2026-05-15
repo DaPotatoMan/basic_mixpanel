@@ -19,6 +19,9 @@ class MixpanelDesktop extends MixpanelBase<MixpanelAnalytics> {
   reset() => use((sdk) => sdk.reset());
 
   @override
+  flush() => use((sdk) => sdk.flush());
+
+  @override
   registerSuperProperties(props) => use((sdk) => sdk.engage(operation: MixpanelUpdateOperations.$set, value: props));
 
   @override

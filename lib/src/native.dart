@@ -21,6 +21,9 @@ class MixpanelNative extends MixpanelBase<Mixpanel> {
   reset() => use((sdk) => sdk.reset());
 
   @override
+  flush() => use((sdk) => sdk.flush());
+
+  @override
   setPeopleProp(prop, to) => use((sdk) => sdk.getPeople().set(prop, to));
 
   @override

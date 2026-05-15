@@ -44,5 +44,11 @@ void main() {
 
       expect(prefs.getString('mixpanel.analytics'), isNull);
     });
+
+    test('flush is exposed and completes', () async {
+      final mixpanel = Mixpanel.init('token-123');
+
+      await mixpanel.flush();
+    });
   });
 }

@@ -336,6 +336,21 @@ class MixpanelAnalytics {
     await _saveQueuedEventsToLocalStorage();
   }
 
+  /// Forces queued events to be uploaded immediately in batch mode.
+  /// In non-batch mode there is nothing buffered, so this is a no-op.
+  Future<void> flush() async {
+    if (!isBatchMode) {
+      return;
+    }
+
+    if (!_isQueuedEventsReadFromStorage) {
+      await _restoreQueuedEventsFromStorage();
+      _isQueuedEventsReadFromStorage = true;
+    }
+
+    await _uploadQueuedEvents();
+  }
+
   /// As the API for Mixpanel only allows 50 events per batch, we need to restrict the events sent on each request.
   int _getMaximumRange(int length) => length < maxEventsInBatchRequest ? length : maxEventsInBatchRequest;
 
