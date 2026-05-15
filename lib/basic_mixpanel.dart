@@ -7,7 +7,9 @@ import 'package:flutter/foundation.dart';
 
 export 'package:basic_mixpanel/src/base.dart' show MixpanelConfig;
 
+/// Cross-platform Mixpanel client.
 class Mixpanel extends MixpanelBase<MixpanelBase<dynamic>> {
+  /// Creates a Mixpanel client and lazily loads the platform SDK.
   Mixpanel.init(super.token, [MixpanelConfig config = const MixpanelConfig()]) : super.init(sdk: _loadLib(token, config));
 
   static Future<MixpanelBase<dynamic>> _loadLib(String token, MixpanelConfig config) async {
