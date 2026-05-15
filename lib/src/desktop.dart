@@ -16,6 +16,9 @@ class MixpanelDesktop extends MixpanelBase<MixpanelAnalytics> {
   identify(id) => registerSuperProperties({'distinct_id': id});
 
   @override
+  reset() => use((sdk) => sdk.reset());
+
+  @override
   registerSuperProperties(props) => use((sdk) => sdk.engage(operation: MixpanelUpdateOperations.$set, value: props));
 
   @override

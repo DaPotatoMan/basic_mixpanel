@@ -18,16 +18,19 @@ class MixpanelNative extends MixpanelBase<Mixpanel> {
   identify(id) => use((sdk) => sdk.identify(id));
 
   @override
+  reset() => use((sdk) => sdk.reset());
+
+  @override
   setPeopleProp(prop, to) => use((sdk) => sdk.getPeople().set(prop, to));
 
   @override
-  registerSuperProperties(Map<String, dynamic> properties) => use((sdk) => sdk.registerSuperProperties(properties));
+  registerSuperProperties(props) => use((sdk) => sdk.registerSuperProperties(props));
 
   @override
-  registerSuperPropertiesOnce(Map<String, dynamic> properties) => use((sdk) => sdk.registerSuperPropertiesOnce(properties));
+  registerSuperPropertiesOnce(props) => use((sdk) => sdk.registerSuperPropertiesOnce(props));
 
   @override
-  Future<void> clearSuperProperties() => use((sdk) => sdk.clearSuperProperties());
+  clearSuperProperties() => use((sdk) => sdk.clearSuperProperties());
 
   @override
   track(

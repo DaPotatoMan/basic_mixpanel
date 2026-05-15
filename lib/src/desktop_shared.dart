@@ -209,6 +209,22 @@ class MixpanelAnalytics {
     _batchTimer = null;
   }
 
+  /// Clears runtime and persisted analytics state.
+  Future<void> reset() async {
+    _userId = null;
+    _anonymized = null;
+    _trackEvents.clear();
+    _engageEvents.clear();
+    _isQueuedEventsReadFromStorage = false;
+
+    try {
+      prefs ??= await SharedPreferences.getInstance();
+      await prefs!.remove(_prefsKey);
+    } on Exception catch (error) {
+      _onErrorHandler(error, 'Error clearing events from storage');
+    }
+  }
+
   /// Sends a request to track a specific event.
   /// Requests will be sent immediately. If you want to batch the events use [MixpanelAnalytics.batch] instead.
   /// [event] will be the name of the event.

@@ -24,6 +24,7 @@ abstract class MixpanelBase<SDK> {
   Future<T> use<T>(T Function(SDK sdk) fn) async => fn(await sdk);
 
   Future<void> identify(String id);
+  Future<void> reset();
 
   Future<void> registerSuperProperties(Map<String, dynamic> props);
   Future<void> registerSuperPropertiesOnce(Map<String, dynamic> props);
