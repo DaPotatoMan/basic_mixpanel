@@ -50,5 +50,11 @@ void main() {
 
       await mixpanel.flush();
     });
+
+    test('unregisterSuperProperty is exposed and completes', () async {
+      final mixpanel = Mixpanel.init('token-123');
+
+      await mixpanel.unregisterSuperProperty('region');
+    });
   });
 }

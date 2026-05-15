@@ -36,6 +36,9 @@ class Mixpanel extends MixpanelBase<MixpanelBase<dynamic>> {
   registerSuperPropertiesOnce(props) => use((sdk) => sdk.registerSuperPropertiesOnce(props));
 
   @override
+  unregisterSuperProperty(prop) => use((sdk) => sdk.unregisterSuperProperty(prop));
+
+  @override
   clearSuperProperties() => use((sdk) => sdk.clearSuperProperties());
 
   @override
