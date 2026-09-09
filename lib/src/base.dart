@@ -50,6 +50,9 @@ abstract class MixpanelBase<SDK> {
   /// Removes a single super property.
   Future<void> unregisterSuperProperty(String prop);
 
+  /// Removes multiple super properties.
+  Future<void> unregisterSuperProperties(Iterable<String> props);
+
   /// Removes all registered super properties.
   Future<void> clearSuperProperties();
 

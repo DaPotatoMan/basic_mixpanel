@@ -39,6 +39,7 @@ await mixpanel.flush();
 - `registerSuperProperties(Map<String, dynamic> props)`
 - `registerSuperPropertiesOnce(Map<String, dynamic> props)`
 - `unregisterSuperProperty(String prop)`
+- `unregisterSuperProperties(Iterable<String> props)`
 - `clearSuperProperties()`
 - `flush()`
 - `reset()`

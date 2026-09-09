@@ -274,7 +274,7 @@ class MixpanelAnalytics {
   /// [ignoreAlias] is the `$ignore_alias` property as explained in [mixpanel documentation](https://developer.mixpanel.com/docs/http)
   Future<bool> engage({
     required MixpanelUpdateOperations operation,
-    required Map<String, dynamic> value,
+    required Object value,
     DateTime? time,
     String? ip,
     bool? ignoreTime,
@@ -404,7 +404,7 @@ class MixpanelAnalytics {
   /// The engage event is coded into base64 with the required properties.
   Map<String, dynamic> _createEngageEvent(
     MixpanelUpdateOperations operation,
-    Map<String, dynamic> value,
+    Object value,
     DateTime time,
     String? ip,
     bool? ignoreTime,
@@ -414,7 +414,7 @@ class MixpanelAnalytics {
       operation.propertyKey: value,
       r'$token': _token,
       r'$time': time.millisecondsSinceEpoch,
-      r'$distinct_id': value['distinct_id'] ??
+      r'$distinct_id': (value is Map ? value['distinct_id'] : null) ??
           (_userId == null
               ? 'Unknown'
               : _shouldAnonymize

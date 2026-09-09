@@ -48,6 +48,13 @@ class MixpanelNative extends MixpanelBase<Mixpanel> {
   unregisterSuperProperty(prop) => use((sdk) => sdk.unregisterSuperProperty(prop));
 
   @override
+  unregisterSuperProperties(props) => use((sdk) async {
+    for (final prop in props) {
+      await sdk.unregisterSuperProperty(prop);
+    }
+  });
+
+  @override
   clearSuperProperties() => use((sdk) => sdk.clearSuperProperties());
 
   @override

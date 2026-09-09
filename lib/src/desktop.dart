@@ -34,7 +34,12 @@ class MixpanelDesktop extends MixpanelBase<MixpanelAnalytics> {
   registerSuperPropertiesOnce(props) => use((sdk) => sdk.engage(operation: .$setOnce, value: props));
 
   @override
-  unregisterSuperProperty(prop) => use((sdk) => sdk.engage(operation: .$unset, value: {prop: ''}));
+  unregisterSuperProperty(prop) => use((sdk) => sdk.engage(operation: .$unset, value: [prop]));
+
+  @override
+  unregisterSuperProperties(props) => use(
+    (sdk) => sdk.engage(operation: .$unset, value: props.toList()),
+  );
 
   @override
   clearSuperProperties() => use((sdk) => sdk.engage(operation: .$unset, value: {}));
