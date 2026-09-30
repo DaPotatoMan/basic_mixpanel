@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 enum MixpanelUpdateOperations {
   $set,
@@ -60,16 +61,16 @@ class MixpanelAnalytics {
     Map<String, String>? optionalHeaders,
     String? prefsKey,
     String? baseApiUrl,
-  })  : _token = token,
-        _userId$ = userId$,
-        _verbose = verbose,
-        _useIp = useIp,
-        _onError = onError,
-        _shouldAnonymize = shouldAnonymize,
-        _shaFn = shaFn,
-        _proxyUrl = proxyUrl,
-        _optionalHeaders = optionalHeaders,
-        baseApiUrl = baseApiUrl ?? _baseUsApiUrl {
+  }) : _token = token,
+       _userId$ = userId$,
+       _verbose = verbose,
+       _useIp = useIp,
+       _onError = onError,
+       _shouldAnonymize = shouldAnonymize,
+       _shaFn = shaFn,
+       _proxyUrl = proxyUrl,
+       _optionalHeaders = optionalHeaders,
+       baseApiUrl = baseApiUrl ?? _baseUsApiUrl {
     _userId$?.listen((id) => _userId = id);
     _prefsKey = prefsKey ?? _prefsKey;
   }
@@ -101,17 +102,17 @@ class MixpanelAnalytics {
     Map<String, String>? optionalHeaders,
     String? prefsKey,
     String? baseApiUrl,
-  })  : _token = token,
-        _userId$ = userId$,
-        _verbose = verbose,
-        _useIp = useIp,
-        _onError = onError,
-        _shouldAnonymize = shouldAnonymize,
-        _shaFn = shaFn,
-        _proxyUrl = proxyUrl,
-        _uploadInterval = uploadInterval,
-        _optionalHeaders = optionalHeaders,
-        baseApiUrl = baseApiUrl ?? _baseUsApiUrl {
+  }) : _token = token,
+       _userId$ = userId$,
+       _verbose = verbose,
+       _useIp = useIp,
+       _onError = onError,
+       _shouldAnonymize = shouldAnonymize,
+       _shaFn = shaFn,
+       _proxyUrl = proxyUrl,
+       _uploadInterval = uploadInterval,
+       _optionalHeaders = optionalHeaders,
+       baseApiUrl = baseApiUrl ?? _baseUsApiUrl {
     _batchTimer = Timer.periodic(_uploadInterval, (_) => _uploadQueuedEvents());
     _userId$?.listen((id) => _userId = id);
     _prefsKey = prefsKey ?? _prefsKey;
@@ -142,8 +143,31 @@ class MixpanelAnalytics {
   /// Stores the value of the userId
   String? _userId;
 
+  /// The HTTP API has no SDK-managed identity. Keep an anonymous id locally so
+  /// events recorded before [userId] is set do not all share `Unknown`.
+  static const _anonymousIdPrefsKey = 'mixpanel.analytics.anonymous_id';
+  static const _anonymousIdMergedPrefsKey = 'mixpanel.analytics.anonymous_id_merged';
+  static const _uuid = Uuid();
+  String? _anonymousId;
+  Future<String>? _loadingAnonymousId;
+
   /// Sets the value of the userId.
   set userId(String? id) => _userId = id;
+
+  /// Identifies the current user and merges their anonymous activity when one
+  /// is active, matching the client SDK identity flow.
+  Future<void> identify(String id) async {
+    final wasAnonymous = _userId == null;
+    final anonymousId = wasAnonymous ? await _anonymousDistinctId() : null;
+
+    // Future events belong to [id] even if the merge request is unavailable.
+    _userId = id;
+
+    if (anonymousId != null && await _sendIdentifyMerge(id, anonymousId)) {
+      prefs ??= await SharedPreferences.getInstance();
+      await prefs!.setBool(_anonymousIdMergedPrefsKey, true);
+    }
+  }
 
   /// Sets the optional headers.
   set optionalHeaders(Map<String, String> optionalHeaders) => _optionalHeaders = optionalHeaders;
@@ -212,6 +236,8 @@ class MixpanelAnalytics {
   /// Clears runtime and persisted analytics state.
   Future<void> reset() async {
     _userId = null;
+    _anonymousId = null;
+    _loadingAnonymousId = null;
     _anonymized = null;
     _trackEvents.clear();
     _engageEvents.clear();
@@ -220,6 +246,8 @@ class MixpanelAnalytics {
     try {
       prefs ??= await SharedPreferences.getInstance();
       await prefs!.remove(_prefsKey);
+      await prefs!.remove(_anonymousIdPrefsKey);
+      await prefs!.remove(_anonymousIdMergedPrefsKey);
     } on Exception catch (error) {
       _onErrorHandler(error, 'Error clearing events from storage');
     }
@@ -239,7 +267,7 @@ class MixpanelAnalytics {
     String? ip,
     String? insertId,
   }) async {
-    final trackEvent = _createTrackEvent(
+    final trackEvent = await _createTrackEvent(
       event,
       properties,
       time ?? DateTime.now(),
@@ -280,7 +308,7 @@ class MixpanelAnalytics {
     bool? ignoreTime,
     bool? ignoreAlias,
   }) async {
-    final engageEvent = _createEngageEvent(
+    final engageEvent = await _createEngageEvent(
       operation,
       value,
       time ?? DateTime.now(),
@@ -373,23 +401,18 @@ class MixpanelAnalytics {
   }
 
   /// The track event is coded into base64 with the required properties.
-  Map<String, dynamic> _createTrackEvent(
+  Future<Map<String, dynamic>> _createTrackEvent(
     String event,
     Map<String, dynamic> props,
     DateTime time,
     String? ip,
     String? insertId,
-  ) {
-    var properties = {
+  ) async {
+    Map<String, dynamic> properties = {
       ...props,
       'token': _token,
       'time': time.millisecondsSinceEpoch,
-      'distinct_id': props['distinct_id'] ??
-          (_userId == null
-              ? 'Unknown'
-              : _shouldAnonymize
-                  ? _anonymize('userId', _userId!)
-                  : _userId),
+      'distinct_id': await _distinctId(props['distinct_id']),
     };
     if (ip != null) {
       properties = {...properties, 'ip': ip};
@@ -402,24 +425,19 @@ class MixpanelAnalytics {
   }
 
   /// The engage event is coded into base64 with the required properties.
-  Map<String, dynamic> _createEngageEvent(
+  Future<Map<String, dynamic>> _createEngageEvent(
     MixpanelUpdateOperations operation,
     Object value,
     DateTime time,
     String? ip,
     bool? ignoreTime,
     bool? ignoreAlias,
-  ) {
-    var data = <String, dynamic>{
+  ) async {
+    Map<String, dynamic> data = {
       operation.propertyKey: value,
       r'$token': _token,
       r'$time': time.millisecondsSinceEpoch,
-      r'$distinct_id': (value is Map ? value['distinct_id'] : null) ??
-          (_userId == null
-              ? 'Unknown'
-              : _shouldAnonymize
-                  ? _anonymize('userId', _userId!)
-                  : _userId),
+      r'$distinct_id': await _distinctId(value is Map ? value['distinct_id'] : null),
     };
     if (ip != null) {
       data = {...data, r'$ip': ip};
@@ -431,6 +449,45 @@ class MixpanelAnalytics {
       data = {...data, r'$ignore_alias': ignoreAlias};
     }
     return data;
+  }
+
+  Future<Object> _distinctId(Object? explicitId) async {
+    if (explicitId != null) return explicitId;
+
+    final userId = _userId;
+    if (userId != null) {
+      return _shouldAnonymize ? _anonymize('userId', userId) : userId;
+    }
+
+    return _anonymousId ??= await _anonymousDistinctId();
+  }
+
+  Future<String> _anonymousDistinctId() => _loadingAnonymousId ??= _loadAnonymousId();
+
+  Future<String> _loadAnonymousId() async {
+    prefs ??= await SharedPreferences.getInstance();
+    final savedId = prefs!.getString(_anonymousIdPrefsKey);
+    final wasMerged = prefs!.getBool(_anonymousIdMergedPrefsKey) ?? false;
+    if (savedId != null && savedId.isNotEmpty && !wasMerged) return savedId;
+
+    final id = _uuid.v4();
+    await Future.wait([
+      prefs!.setString(_anonymousIdPrefsKey, id),
+      prefs!.remove(_anonymousIdMergedPrefsKey),
+    ]);
+    return id;
+  }
+
+  Future<bool> _sendIdentifyMerge(String identifiedId, String anonymousId) {
+    final event = {
+      'event': r'$identify',
+      'properties': {
+        r'$identified_id': identifiedId,
+        r'$anon_id': anonymousId,
+        'token': _token,
+      },
+    };
+    return _sendTrackEvent(_base64Encoder(event));
   }
 
   /// Event data has to be sent with base64 encoding.
@@ -447,7 +504,8 @@ class MixpanelAnalytics {
 
   /// Sends the event to the mixpanel API endpoint.
   Future<bool> _sendEvent(String event, String op) async {
-    var url = '$baseApiUrl/$op/?data=$event&verbose=${_verbose ? 1 : 0}'
+    var url =
+        '$baseApiUrl/$op/?data=$event&verbose=${_verbose ? 1 : 0}'
         '&ip=${_useIp ? 1 : 0}';
     if (_proxyUrl != null) {
       url = url.replaceFirst('https://', '');

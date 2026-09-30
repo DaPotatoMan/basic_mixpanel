@@ -13,7 +13,7 @@ class MixpanelDesktop extends MixpanelBase<MixpanelAnalytics> {
       );
 
   @override
-  identify(id) => use((sdk) => sdk.userId = id);
+  identify(id) => use((sdk) => sdk.identify(id));
 
   @override
   alias(alias, distinctId) => track(

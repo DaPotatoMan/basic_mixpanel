@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:basic_mixpanel/basic_mixpanel.dart';
+import 'package:basic_mixpanel/src/desktop_shared.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -69,4 +71,63 @@ void main() {
       await mixpanel.unregisterSuperProperties(['region', 'plan']);
     });
   });
+
+  group('MixpanelAnalytics', () {
+    test('persists an anonymous distinct id until reset', () async {
+      SharedPreferences.setMockInitialValues({});
+      final firstClient = _RecordingClient();
+      final first = MixpanelAnalytics(token: 'token')..http = firstClient;
+
+      await first.track(event: 'opened', properties: {});
+      final firstId = firstClient.distinctId;
+
+      final secondClient = _RecordingClient();
+      final second = MixpanelAnalytics(token: 'token')..http = secondClient;
+      await second.track(event: 'opened', properties: {});
+
+      expect(firstId, matches(RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')));
+      expect(secondClient.distinctId, firstId);
+
+      await second.reset();
+      await second.track(event: 'opened', properties: {});
+
+      expect(secondClient.distinctId, isNot(firstId));
+    });
+
+    test('identify merges the anonymous id before using the identified id', () async {
+      SharedPreferences.setMockInitialValues({});
+      final client = _RecordingClient();
+      final analytics = MixpanelAnalytics(token: 'token')..http = client;
+
+      await analytics.track(event: 'opened', properties: {});
+      final anonymousId = (client.events.single['properties'] as Map<String, dynamic>)['distinct_id'];
+
+      await analytics.identify('user-123');
+
+      final merge = client.events.last;
+      expect(merge['event'], r'$identify');
+      expect(merge['properties'], {
+        r'$identified_id': 'user-123',
+        r'$anon_id': anonymousId,
+        'token': 'token',
+      });
+
+      await analytics.track(event: 'opened', properties: {});
+      expect((client.events.last['properties'] as Map<String, dynamic>)['distinct_id'], 'user-123');
+    });
+  });
+}
+
+class _RecordingClient extends BaseClient {
+  final events = <Map<String, dynamic>>[];
+
+  String? get distinctId => (events.last['properties'] as Map<String, dynamic>)['distinct_id'] as String?;
+
+  @override
+  Future<StreamedResponse> send(BaseRequest request) async {
+    final data = request.url.queryParameters['data']!;
+    final event = jsonDecode(utf8.decode(base64Decode(data))) as Map<String, dynamic>;
+    events.add(event);
+    return StreamedResponse(Stream<List<int>>.value(const []), 200);
+  }
 }
